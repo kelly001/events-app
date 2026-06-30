@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 
-import { loadSavedFilters, saveSavedFilters } from '../../src/helpers/loadSaveFilters'
-import { CurrentFilter, SavedFilter, eventTypeOptions } from '../../src/types/filters'
+import { sharedLabels } from '../../src/constants/sharedLabels'
+import { getEventTypeLabel } from '../../src/helpers/getEventTypeLabel'
+import { hasSavedFiltersStorage, loadSavedFilters, saveSavedFilters } from '../../src/helpers/loadSaveFilters'
+import { savedFilterPresets } from '../../src/mockSavedFilters'
+import { CurrentFilter, SavedFilter } from '../../src/types/filters'
 
 const getFilterLabel = (filters: CurrentFilter) => {
-  const artistLabel = filters.customArtistName || filters.selectedArtist || 'Любой артист'
+  const artistLabel = filters.customArtistName || filters.selectedArtist || sharedLabels.anyArtist
   const typeLabel =
     filters.eventType && filters.eventType !== 'all'
-      ? eventTypeOptions.find((option) => option.value === filters.eventType)?.label || filters.eventType
-      : 'Все типы'
+      ? getEventTypeLabel(filters.eventType)
+      : sharedLabels.allEventTypes
 
   return `${artistLabel} · ${typeLabel}`
 }
@@ -18,7 +21,7 @@ export const useSavedFilters = () => {
   const [hasLoadedSavedFilters, setHasLoadedSavedFilters] = useState(false)
 
   useEffect(() => {
-    setSavedFilters(loadSavedFilters())
+    setSavedFilters(hasSavedFiltersStorage() ? loadSavedFilters() : savedFilterPresets)
     setHasLoadedSavedFilters(true)
   }, [])
 

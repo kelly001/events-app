@@ -2,7 +2,7 @@ import { Event } from '../src/types/events'
 
 function EventCard({ event }: { event: Event }) {
   return (
-    <article className="rounded-3xl border border-border-color bg-card-bg p-5 shadow-sm transition hover:border-primary">
+    <article className="rounded-3xl border border-border-color bg-card-bg p-5 shadow-sm transition duration-150 hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
       <div className="flex items-start gap-5">
         <div className="flex h-24 w-20 flex-col items-center justify-center rounded-3xl bg-primary-soft text-text-color">
           <span className="text-3xl font-semibold">{new Date(event.date).getDate().toString().padStart(2, '0')}</span>
@@ -21,7 +21,7 @@ function EventCard({ event }: { event: Event }) {
         </div>
 
         <div className="flex h-full items-center">
-          <a className="ml-auto rounded-full border border-border-color px-4 py-2 text-sm text-primary transition hover:border-primary-dark hover:bg-primary-soft" href={event.url}>
+          <a className="ml-auto rounded-full border border-border-color px-4 py-2 text-sm text-primary outline-none transition duration-150 hover:border-primary-dark hover:bg-primary-soft focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:translate-y-px" href={event.url}>
             →
           </a>
         </div>

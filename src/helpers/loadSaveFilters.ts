@@ -21,6 +21,11 @@ export const saveSavedFilters = (filters: SavedFilter[]) => {
   window.localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(filters))
 }
 
+export const hasSavedFiltersStorage = () => {
+  if (typeof window === 'undefined') return false
+  return window.localStorage.getItem(SAVED_FILTERS_KEY) !== null && window.localStorage.getItem(SAVED_FILTERS_KEY) !== '[]';
+}
+
 export const loadCurrentFilter = (): CurrentFilter | null => {
   if (typeof window === 'undefined') return null
 

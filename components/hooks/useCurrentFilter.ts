@@ -13,9 +13,45 @@ const normalizeFilter = (filter: CurrentFilter): CurrentFilter => ({
   eventType: filter.eventType ?? 'all'
 })
 
+const resolveCompatibleFilter = (filter: CurrentFilter): CurrentFilter => {
+  const nextFilter = normalizeFilter(filter)
+
+  if (nextFilter.customArtistName) {
+    return {
+      ...nextFilter,
+      selectedArtist: undefined
+    }
+  }
+
+  return nextFilter
+}
+
 const getInitialFilter = (override?: CurrentFilter): CurrentFilter => (
-  normalizeFilter(override ?? initialFilter)
+  resolveCompatibleFilter(override ?? initialFilter)
 )
+
+const applyCompatibleUpdates = (
+  filter: CurrentFilter,
+  updates: Partial<CurrentFilter>
+): CurrentFilter => {
+  const nextFilter = normalizeFilter({ ...filter, ...updates })
+
+  if (updates.selectedArtist) {
+    return {
+      ...nextFilter,
+      customArtistName: undefined
+    }
+  }
+
+  if (updates.customArtistName?.trim()) {
+    return {
+      ...nextFilter,
+      selectedArtist: undefined
+    }
+  }
+
+  return nextFilter
+}
 
 export const useCurrentFilter = (initialFilterOverride?: CurrentFilter) => {
   const [currentFilter, setCurrentFilter] = useState<CurrentFilter>(() => getInitialFilter(initialFilterOverride))
@@ -27,13 +63,13 @@ export const useCurrentFilter = (initialFilterOverride?: CurrentFilter) => {
     const cachedFilter = loadCurrentFilter()
     if (!cachedFilter) return
 
-    const nextFilter = normalizeFilter(cachedFilter)
+    const nextFilter = resolveCompatibleFilter(cachedFilter)
     setCurrentFilter(nextFilter)
     setAppliedFilter(nextFilter)
   }, [initialFilterOverride])
 
   const onChange = (updates: Partial<CurrentFilter>) => {
-    setCurrentFilter((prev) => normalizeFilter({ ...prev, ...updates }))
+    setCurrentFilter((prev) => applyCompatibleUpdates(prev, updates))
   }
 
   const onApply = () => {
@@ -43,7 +79,7 @@ export const useCurrentFilter = (initialFilterOverride?: CurrentFilter) => {
   }
 
   const applySavedFilter = (filter: SavedFilter) => {
-    const nextFilter = normalizeFilter({
+    const nextFilter = resolveCompatibleFilter({
       selectedArtist: filter.selectedArtist,
       customArtistName: filter.customArtistName,
       eventType: filter.eventType ?? 'all'
