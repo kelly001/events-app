@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { CurrentFilter, eventTypeOptions } from '../src/types/filters'
 import { artistOptions } from '../src/mockArtists'
 
@@ -13,18 +12,16 @@ const filterPanelLabels = {
 }
 
 function FilterPanel({
-  initialFilter,
-  //onChange,
+  filter,
+  onChange,
   onApply,
   onSave
 }: {
-  initialFilter: CurrentFilter
-  //onChange: (updates: Partial<CurrentFilter>) => void
-  onApply: (updates: CurrentFilter) => void
-  onSave: (filter: CurrentFilter) => void
+  filter: CurrentFilter
+  onChange: (updates: Partial<CurrentFilter>) => void
+  onApply: () => void
+  onSave: () => void
 }) {
-  const [filter, setFilter] = useState<CurrentFilter>(initialFilter);
-
   return (
     <section className="rounded-3xl border border-border-color bg-card-bg p-6 shadow-sm">
       <div className="grid gap-4 md:grid-cols-[1.2fr_1fr_0.8fr_auto_auto]">
@@ -32,7 +29,7 @@ function FilterPanel({
           <span className="block text-sm font-medium text-text-color">Артист</span>
           <select
             value={filter.selectedArtist ?? ''}
-            onChange={(e) => setFilter({ ...filter, selectedArtist: e.target.value || undefined })}
+            onChange={(e) => onChange({ selectedArtist: e.target.value || undefined })}
             className="w-full rounded-2xl border border-border-color bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
           >
             <option value="">{filterPanelLabels.chooseArtist}</option>
@@ -46,7 +43,7 @@ function FilterPanel({
           <span className="block text-sm font-medium text-text-color">{filterPanelLabels.or}</span>
           <input
             value={filter.customArtistName ?? ''}
-            onChange={(e) => setFilter({ ...filter, customArtistName: e.target.value || undefined })}
+            onChange={(e) => onChange({ customArtistName: e.target.value || undefined })}
             placeholder={filterPanelLabels.enterArtistName}
             className="w-full rounded-2xl border border-border-color bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
           />
@@ -56,7 +53,7 @@ function FilterPanel({
           <span className="block text-sm font-medium text-text-color">{filterPanelLabels.eventType}</span>
           <select
             value={filter.eventType ?? 'all'}
-            onChange={(e) => setFilter({ ...filter, eventType: e.target.value as any })}
+            onChange={(e) => onChange({ eventType: e.target.value as CurrentFilter['eventType'] })}
             className="w-full rounded-2xl border border-border-color bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
           >
             {eventTypeOptions.map((option) => (
@@ -67,7 +64,7 @@ function FilterPanel({
 
         <button
           type="button"
-          onClick={() => onApply(filter)}
+          onClick={onApply}
           className="h-1/2 rounded-3xl bg-primary px-6 text-sm font-semibold text-white transition hover:bg-primary-dark"
         >
           {filterPanelLabels.applyFilters}
@@ -75,7 +72,7 @@ function FilterPanel({
 
         <button
           type="button"
-          onClick={() => onSave(filter)}
+          onClick={onSave}
           className="h-1/2 rounded-3xl border border-primary bg-white px-6 text-sm font-semibold text-primary transition hover:bg-primary/5"
         >
           {filterPanelLabels.saveFilters}

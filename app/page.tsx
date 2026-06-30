@@ -1,23 +1,43 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import FilterPanel from '../components/FilterPanel'
 import SavedFilters from '../components/SavedFilters'
 import EventCard from '../components/EventCard'
-import { useEventPage } from '../components/hooks/useEventPage'
+import { useCurrentFilter } from '../components/hooks/useCurrentFilter'
+import { useEvents } from '../components/hooks/useEvents'
+import { useSavedFilters } from '../components/hooks/useSavedFilters'
+import { filterEvents } from '../src/helpers/filterEvents'
 
 export default function Page() {
   const {
-    activeFilter,
-    setActiveFilter,
+    currentFilter,
+    appliedFilter,
+    onChange: onFilterChange,
+    onApply: applyCurrentFilter,
+    applySavedFilter
+  } = useCurrentFilter()
+  const {
     savedFilters,
+    saveFilter,
+    removeSavedFilter
+  } = useSavedFilters()
+  const {
+    events,
     isLoading,
     lastUpdated,
-    errorMessage,
-    filteredEvents,
-    applySavedFilter,
-    saveCurrentFilter,
-    removeSavedFilter,
-  } = useEventPage()
+    errorMessage
+  } = useEvents()
+
+  const filteredEvents = useMemo(
+    () => filterEvents(events, appliedFilter),
+    [events, appliedFilter]
+  )
+
+  const saveCurrentFilter = () => {
+    saveFilter(currentFilter)
+  }
 
   return (
     <main className="container mx-auto p-6">
@@ -27,9 +47,9 @@ export default function Page() {
       </header>
 
       <FilterPanel
-        initialFilter={activeFilter}
-        //onChange={updateFilters}
-        onApply={setActiveFilter}
+        filter={currentFilter}
+        onChange={onFilterChange}
+        onApply={applyCurrentFilter}
         onSave={saveCurrentFilter}
       />
 
