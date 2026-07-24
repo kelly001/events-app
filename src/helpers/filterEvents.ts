@@ -1,5 +1,5 @@
-import { Event } from '../types/events'
-import { CurrentFilter } from '../types/filters'
+import type { Event } from '../types/events'
+import type { CurrentFilter } from '../types/filters'
 
 export const filterEvents = (events: Event[], filter: CurrentFilter) => {
   return events.filter((event) => {

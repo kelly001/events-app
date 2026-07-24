@@ -1,4 +1,4 @@
-import { EventType } from './events'
+import type { EventType } from './events'
 
 export type CurrentFilter = {
   selectedArtist?: string
