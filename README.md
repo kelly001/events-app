@@ -9,6 +9,14 @@ npm install
 npm run dev
 ```
 
+Run the unit and component tests:
+
+```bash
+npm test
+```
+
+Use `npm run test:watch` while developing.
+
 Files added:
 - `app/layout.tsx` — root layout
 - `app/page.tsx` — homepage stub
