@@ -1,4 +1,4 @@
-import { Event } from '../src/types/events'
+import type { Event } from '../src/types/events'
 
 function EventCard({ event }: { event: Event }) {
   return (

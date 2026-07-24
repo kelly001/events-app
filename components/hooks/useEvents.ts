@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import { loadEventCache, saveEventCache } from '../../src/helpers/loadSaveEventCache'
-import { Event } from '../../src/types/events'
+import { trpc } from '../../src/trpc/client'
+import type { EventCache } from '../../src/types/events'
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000
 const eventMessages = {
@@ -10,72 +11,40 @@ const eventMessages = {
 }
 
 export const useEvents = () => {
-  const [events, setEvents] = useState<Event[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isCacheFresh, setIsCacheFresh] = useState(false)
+  const [cachedSnapshot, setCachedSnapshot] = useState<EventCache | null>(null)
+  const [hasReadCache, setHasReadCache] = useState(false)
+  const eventsQuery = trpc.events.list.useQuery(undefined, {
+    staleTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
+  })
 
   useEffect(() => {
-    let isMounted = true
-
-    const fetchEvents = async () => {
-      const cached = loadEventCache()
-      const cachedIsFresh = cached
-        ? Date.now() - new Date(cached.updatedAt).getTime() < CACHE_TTL_MS
-        : false
-
-      if (cached && isMounted) {
-        setEvents(cached.events)
-        setLastUpdated(cached.updatedAt)
-        setIsCacheFresh(cachedIsFresh)
-        setIsLoading(false)
-      }
-
-      try {
-        const response = await fetch('/api/events')
-        if (!response.ok) {
-          throw new Error('Failed to load events')
-        }
-
-        const data = await response.json()
-        const nextEvents = data.events ?? []
-        const nextUpdatedAt = data.updatedAt ?? new Date().toISOString()
-
-        if (isMounted) {
-          setEvents(nextEvents)
-          setLastUpdated(nextUpdatedAt)
-          setIsCacheFresh(true)
-          setErrorMessage(null)
-        }
-
-        saveEventCache({
-          events: nextEvents,
-          updatedAt: nextUpdatedAt
-        })
-      } catch {
-        if (isMounted) {
-          setErrorMessage(cached
-            ? eventMessages.refreshFailedWithCache
-            : eventMessages.loadFailed
-          )
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    fetchEvents()
-
-    return () => {
-      isMounted = false
-    }
+    setCachedSnapshot(loadEventCache())
+    setHasReadCache(true)
   }, [])
 
+  useEffect(() => {
+    if (!eventsQuery.data) return
+    saveEventCache(eventsQuery.data)
+  }, [eventsQuery.data])
+
+  const visibleSnapshot = eventsQuery.data ?? cachedSnapshot
+  const lastUpdated = visibleSnapshot?.updatedAt ?? null
+  const updatedAtTime = lastUpdated ? new Date(lastUpdated).getTime() : Number.NaN
+  const isCacheFresh = Number.isFinite(updatedAtTime)
+    ? Date.now() - updatedAtTime < CACHE_TTL_MS
+    : false
+  const isLoading = !visibleSnapshot && (!hasReadCache || eventsQuery.isPending)
+  const errorMessage = eventsQuery.isError
+    ? visibleSnapshot
+      ? eventMessages.refreshFailedWithCache
+      : eventMessages.loadFailed
+    : null
+
   return {
-    events,
+    events: visibleSnapshot?.events ?? [],
     isLoading,
     lastUpdated,
     isCacheFresh,
