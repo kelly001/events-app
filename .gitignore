@@ -1,7 +1,6 @@
 node_modules
 .next
 .vscode
-notes
 *.d.ts
 *.tsbuildinfo
 *.log
